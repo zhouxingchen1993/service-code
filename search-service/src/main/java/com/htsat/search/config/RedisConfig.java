@@ -17,7 +17,7 @@ import redis.clients.jedis.JedisPoolConfig;
 //@EnableAutoConfiguration
 //@ConfigurationProperties(prefix = "spring.redis", locations = "classpath:application.properties")
 @Component
-@PropertySource("classpath:application.properties")
+@PropertySource("classpath:application.yml")
 @ConfigurationProperties(prefix = "spring.redis")
 public class RedisConfig {
 
