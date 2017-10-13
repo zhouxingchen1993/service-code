@@ -106,7 +106,7 @@
 //	@Test
 //	public void testDelete() throws IOException {
 //
-//		URL url = new URL("http://localhost:8000/orders/1/13");
+//		URL url = new URL("http://localhost:8000/orders/1/14");
 //		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 //		connection.setRequestMethod("DELETE");
 //		connection.setDoInput(true);
@@ -134,7 +134,7 @@
 //	@Test
 //	public void updateOrderTest() {
 //		try {
-//			sendUpdateOrderPost("http://localhost:8000/orders/delivery/1/14/1");
+//			sendUpdateOrderPost("http://localhost:8000/orders/delivery/1/15/1");
 //		} catch (Exception e) {
 //
 //		}
@@ -143,7 +143,7 @@
 //	@Test
 //	public void updateOrderPaymentTest() {
 //		try {
-//			sendUpdateOrderPost("http://localhost:8000/orders/payment/1/14/301/123456");
+//			sendUpdateOrderPost("http://localhost:8000/orders/payment/1/15/301/123456");
 //		} catch (Exception e) {
 //
 //		}
