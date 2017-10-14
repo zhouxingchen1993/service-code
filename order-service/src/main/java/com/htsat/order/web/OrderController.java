@@ -147,10 +147,10 @@ public class OrderController {
     }
 
 //    @Autowired
-//    ILoadBalanceService loadBalanceService;
+//    ILoadBalanceService loadbalanceService;
 //
 //    @RequestMapping(value = "/loadbalance")
 //    public String loadbalance(@RequestParam String name){
-//        return loadBalanceService.loadbalanceService(name);
+//        return loadbalanceService.loadbalanceService(name);
 //    }
 }

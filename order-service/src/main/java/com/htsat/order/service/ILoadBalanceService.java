@@ -1,6 +1,12 @@
 //package com.htsat.order.service;
 //
-//public interface ILoadBalanceService {
+//import org.springframework.cloud.netflix.feign.FeignClient;
+//import org.springframework.web.bind.annotation.RequestMapping;
+//import org.springframework.web.bind.annotation.RequestMethod;
+//import org.springframework.web.bind.annotation.RequestParam;
 //
-//    String loadbalanceService(String name);
+//@FeignClient(value = "service-hi")
+//public interface ILoadBalanceService {
+//    @RequestMapping(value = "/hi",method = RequestMethod.GET)
+//    String loadbalanceService(@RequestParam(value = "name") String name);
 //}

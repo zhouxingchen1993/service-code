@@ -2,6 +2,7 @@ package com.htsat.search.web;
 
 import com.htsat.search.dto.SearchResultDTO;
 import com.htsat.search.dto.TestSearchResultDTO;
+//import com.htsat.search.service.ILoadBalanceService;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -93,6 +94,14 @@ public class SearchController {
 
         return list;
     }
+//
+//    @Autowired
+//    ILoadBalanceService loadbalanceService;
+//
+//    @RequestMapping(value = "/loadbalance")
+//    public String loadbalance(@RequestParam String name){
+//        return loadbalanceService.loadbalanceService(name);
+//    }
 
 
 //    @RequestMapping(value = "/test_search", method = RequestMethod.GET)
