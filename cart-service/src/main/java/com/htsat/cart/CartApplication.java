@@ -15,11 +15,11 @@ import org.springframework.web.client.RestTemplate;
 @MapperScan("com.htsat.cart.dao")
 public class CartApplication {
 
-//	@Bean
-//	@LoadBalanced
-//	RestTemplate restTemplate() {
-//		return new RestTemplate();
-//	}
+	@Bean
+	@LoadBalanced
+	RestTemplate restTemplate() {
+		return new RestTemplate();
+	}
 
 	public static void main(String[] args) {
 		SpringApplication.run(CartApplication.class, args);
