@@ -8,7 +8,7 @@ import com.htsat.order.exception.InsertException;
 import com.htsat.order.exception.SearchException;
 import com.htsat.order.exception.UpdateException;
 import com.htsat.order.service.IAddressService;
-//import com.htsat.order.service.ILoadBalanceService;
+import com.htsat.order.service.ILoadBalanceService;
 import com.htsat.order.service.IOrderService;
 import com.htsat.order.service.IUserService;
 import org.apache.log4j.Logger;
@@ -146,11 +146,11 @@ public class OrderController {
         return orderDTO;
     }
 
-//    @Autowired
-//    ILoadBalanceService loadbalanceService;
-//
-//    @RequestMapping(value = "/loadbalance")
-//    public String loadbalance(@RequestParam String name){
-//        return loadbalanceService.loadbalanceService(name);
-//    }
+    @Autowired
+    ILoadBalanceService loadbalanceService;
+
+    @RequestMapping(value = "/loadbalance")
+    public String loadbalance(@RequestParam String name){
+        return loadbalanceService.loadbalanceService(name);
+    }
 }
