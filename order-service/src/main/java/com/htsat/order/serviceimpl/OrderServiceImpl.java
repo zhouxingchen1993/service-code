@@ -1,5 +1,6 @@
 package com.htsat.order.serviceimpl;
 
+import com.htsat.order.config.RedisConfig;
 import com.htsat.order.dao.*;
 import com.htsat.order.dto.DeliveryDTO;
 import com.htsat.order.dto.OrderDTO;
@@ -10,12 +11,12 @@ import com.htsat.order.exception.SearchException;
 import com.htsat.order.exception.UpdateException;
 import com.htsat.order.model.*;
 import com.htsat.order.service.IOrderService;
-import com.htsat.order.service.IRedisService;
 import com.htsat.order.utils.ComputeUtils;
 import com.htsat.order.utils.ConvertToDTO;
 import com.htsat.order.utils.SerializeUtil;
 import com.htsat.order.utils.SortList;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -31,6 +32,8 @@ import java.util.List;
 
 @Service
 public class OrderServiceImpl implements IOrderService {
+
+    private Logger logger = Logger.getLogger(OrderServiceImpl.class);
 
     @Autowired
     REcDeliveryinfoMapper deliveryinfoMapper;
@@ -54,11 +57,7 @@ public class OrderServiceImpl implements IOrderService {
     REcUserbankinfoMapper userbankinfoMapper;
 
     @Autowired
-    private IRedisService redisService;
-
-    private Jedis getJedis(){
-        return redisService.getResource();
-    }
+    private RedisConfig redisConfig;
 
     /**
      * create order
@@ -173,7 +172,18 @@ public class OrderServiceImpl implements IOrderService {
     }
 
     private void createOrderAndDeliveryAndOrderSKUToRedis(OrderDTO orderDTO) throws InsertException{
-        getJedis().set((orderDTO.getOrderId() + "").getBytes(), SerializeUtil.serialize(orderDTO));
+        Jedis jedis = redisConfig.getJedis();
+        String code = null;
+        try {
+            code = jedis.set((orderDTO.getOrderId() + "").getBytes(), SerializeUtil.serialize(orderDTO));
+        } catch (Exception e) {
+            logger.error("Redis insert error: "+ e.getMessage() +" - " + orderDTO.getUserId() + ", value:" + orderDTO);
+        } finally{
+            redisConfig.returnResource(jedis);
+        }
+        if (StringUtils.isEmpty(code)) {
+            throw new InsertException("redis : create failed");
+        }
     }
 
     /**
@@ -210,9 +220,20 @@ public class OrderServiceImpl implements IOrderService {
     }
 
     private OrderDTO getOrderInfoByRedis(Long orderId) throws SearchException {
-        Jedis jedis = getJedis();
-        byte[] orderInfo = jedis.get((orderId + "").getBytes());
-        Object orderObject = SerializeUtil.unserialize(orderInfo);
+        Jedis jedis = redisConfig.getJedis();
+        if(jedis == null || !jedis.exists(orderId + "")){
+            return null;
+        }
+        Object orderObject = null;
+        try {
+            byte[] orderInfo = jedis.get((orderId + "").getBytes());
+            orderObject = SerializeUtil.unserialize(orderInfo);
+        } catch (Exception e) {
+            logger.error("Redis get error: "+ e.getMessage() +" - key : " + orderId);
+        } finally {
+            redisConfig.returnResource(jedis);
+        }
+
         if (orderObject == null)
             return null;
         OrderDTO orderDTO = null;
@@ -271,7 +292,17 @@ public class OrderServiceImpl implements IOrderService {
     }
 
     private void deleteOrderInfoByRedis(Long orderId) throws DeleteException {
-        getJedis().del(orderId + "");
+        Jedis jedis = redisConfig.getJedis();
+        try {
+            Long reply = jedis.del(orderId + "");
+        } catch (Exception e) {
+            logger.error("Redis delete error: "+ e.getMessage() +" - key : " + orderId);
+        }finally{
+            redisConfig.returnResource(jedis);
+        }
+        if (false) {
+            throw new DeleteException("redis : delete failed");
+        }
     }
 
     /**
@@ -333,7 +364,19 @@ public class OrderServiceImpl implements IOrderService {
     }
 
     private void updateOrderDeliveryByRedis(OrderDTO orderDTO) throws UpdateException{
-        getJedis().set((orderDTO.getOrderId() + "").getBytes(), SerializeUtil.serialize(orderDTO));
+        Jedis jedis = redisConfig.getJedis();
+        String reply = null;
+        try {
+            reply = jedis.set((orderDTO.getOrderId() + "").getBytes(), SerializeUtil.serialize(orderDTO));
+        } catch (Exception e) {
+            logger.error("Redis update error: "+ e.getMessage() +" - " + orderDTO.getOrderId() + "" + ", value:" + orderDTO);
+        }finally{
+            redisConfig.returnResource(jedis);
+        }
+
+        if (StringUtils.isEmpty(reply)) {
+            throw new UpdateException("redis : update failed");
+        }
     }
 
     @Override
@@ -387,7 +430,19 @@ public class OrderServiceImpl implements IOrderService {
     }
 
     private void updateOrderPaymentByRedis(OrderDTO orderDTO) throws UpdateException{
-        getJedis().set((orderDTO.getOrderId() + "").getBytes(), SerializeUtil.serialize(orderDTO));
+        Jedis jedis = redisConfig.getJedis();
+        String reply = null;
+        try {
+            reply = jedis.set((orderDTO.getOrderId() + "").getBytes(), SerializeUtil.serialize(orderDTO));
+        } catch (Exception e) {
+            logger.error("Redis update error: "+ e.getMessage() +" - " + orderDTO.getOrderId() + "" + ", value:" + orderDTO);
+        }finally{
+            redisConfig.returnResource(jedis);
+        }
+
+        if (StringUtils.isEmpty(reply)) {
+            throw new UpdateException("redis : update failed");
+        }
     }
 
 
