@@ -2,9 +2,7 @@ package com.htsat.order.serviceimpl;
 
 import com.htsat.order.config.RedisConfig;
 import com.htsat.order.dao.*;
-import com.htsat.order.dto.DeliveryDTO;
-import com.htsat.order.dto.OrderDTO;
-import com.htsat.order.dto.OrderSKUDTO;
+import com.htsat.order.dto.*;
 import com.htsat.order.exception.DeleteException;
 import com.htsat.order.exception.InsertException;
 import com.htsat.order.exception.SearchException;
@@ -445,6 +443,88 @@ public class OrderServiceImpl implements IOrderService {
         }
     }
 
+
+    @Override
+    public void createOrderAndDeliveryAndOrderSKUByShoppingCart(OrderDTO orderDTO, ShoppingCartDTO shoppingCartDTO) throws InsertException{
+        OrderDTO returnOrderDTO = createOrderAndDeliveryAndOrderSKUByMySQLShoppingCart(orderDTO, shoppingCartDTO);
+        createOrderAndDeliveryAndOrderSKUToRedis(returnOrderDTO);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED,isolation = Isolation.DEFAULT,timeout=3600,rollbackFor=Exception.class)
+    public OrderDTO createOrderAndDeliveryAndOrderSKUByMySQLShoppingCart(OrderDTO orderDTO, ShoppingCartDTO shoppingCartDTO) throws InsertException {
+        REcDeliveryinfo deliveryinfo = createDeliveryInfo(orderDTO);
+        REcOrderinfo orderinfo = createOrderByCart(orderDTO, deliveryinfo, shoppingCartDTO);
+        List<REcOrdersku> orderskuList = createOrderSKUByCart(shoppingCartDTO,orderinfo);
+        REcUserdeliveryaddress address = addressMapper.selectByPrimaryKey(orderDTO.getAddressDTO().getNaddressid());
+        return ConvertToDTO.convertToOrderDTO(deliveryinfo, orderinfo, orderskuList, address);
+    }
+
+    private REcOrderinfo createOrderByCart(OrderDTO orderDTO, REcDeliveryinfo deliveryinfo, ShoppingCartDTO shoppingCartDTO) throws InsertException{
+        REcOrderinfo orderinfo = new REcOrderinfo();
+        Date timestamp = new Date();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss");
+        String timeStr = df.format(timestamp);
+        String orderCode = orderDTO.getUserId() + "-order-" + timeStr;
+
+        orderinfo.setNaddressid(orderDTO.getAddressDTO().getNaddressid());
+        orderinfo.setNdeliveryid(deliveryinfo.getNdeliveryid());
+        orderinfo.setNuserid(shoppingCartDTO.getUserId());
+        orderinfo.setSordercode(orderCode);
+        orderinfo.setScustomermark(orderDTO.getScustomermark());
+        orderinfo.setSordersource(orderDTO.getSordersource());
+        orderinfo.setSordertype(orderDTO.getSordertype());
+        orderinfo.setSparentorderid(orderDTO.getParentOrderid());
+        orderinfo.setCpaymentmethod(orderDTO.getPaymentMethod());
+
+        if (orderinfo.getDpaymenttime() == null) {
+            orderinfo.setCstatus((short) 0);
+        } else {
+            orderinfo.setDpaymenttime(orderDTO.getDpaymenttime());
+            orderinfo.setCstatus((short) 1);
+        }
+
+        //compute and get result
+        orderinfo.setNdiscount(ComputeUtils.computeDiscountByCart(shoppingCartDTO.getSkudtoList()));
+        orderinfo.setNtotalprice(ComputeUtils.computeTotalPriceByCart(shoppingCartDTO.getSkudtoList(), orderDTO.getDeliveryDTO()));
+        orderinfo.setNtotalquantity(ComputeUtils.computeNumberByCart(shoppingCartDTO.getSkudtoList()));
+
+        int result = orderinfoMapper.insertSelective(orderinfo);
+        if (result != 1) {
+            throw new InsertException("mysql : create order by cart failed");
+        }
+        return orderinfo;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED,isolation = Isolation.DEFAULT,timeout=3600,rollbackFor=Exception.class)
+    public List<REcOrdersku> createOrderSKUByCart(ShoppingCartDTO shoppingCartDTO, REcOrderinfo orderinfo) throws InsertException{
+        List<SKUDTO> skudtoList = shoppingCartDTO.getSkudtoList();
+        List<REcOrdersku> orderskuList = new ArrayList<>();
+        for (SKUDTO skudto : skudtoList) {
+            REcOrdersku ordersku = new REcOrdersku();
+            ordersku.setNskuid(skudto.getSkuId());
+            ordersku.setNorderid(orderinfo.getNorderid());
+
+            if (StringUtils.isNotEmpty(skudto.getCurrency()))
+                ordersku.setScurrency(skudto.getCurrency());
+            ordersku.setNdiscount(skudto.getDiscount());
+            ordersku.setNquantity(skudto.getQuantity());
+            ordersku.setNorigprice(skudto.getPrice());
+            ordersku.setNprice(skudto.getDisplayPrice());
+
+            orderskuList.add(ordersku);
+            int resultAdd = orderskuMapper.insertSelective(ordersku);
+            if (resultAdd != 1) {
+                throw new InsertException("mysql : create orderSKU by cart failed");
+            }
+            REcSku sku = skuMapper.selectByPrimaryKey(skudto.getSkuId());
+            sku.setNinventory(sku.getNinventory() - skudto.getQuantity());
+            int resultUpdate = skuMapper.updateByPrimaryKeySelective(sku);
+            if (resultUpdate != 1) {
+                throw new InsertException("mysql : update sku inventory by cart failed");
+            }
+        }
+        return orderskuList;
+    }
 
     /**
      * check method
