@@ -3,12 +3,14 @@ package com.htsat.search.config;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -33,65 +35,59 @@ public class RedisConfig {
 
 	private  int timeout;
 
-	private  int max_active;
+	private Map<String, Integer> pool = new HashMap<>();
 
-	private  int max_idle;
-
-	private  int max_wait;
-
-	private  JedisPool pool = null;
+	private  JedisPool jedisPool = null;
 
 	private  JedisPool initialPool(){
 		JedisPoolConfig config = new JedisPoolConfig();
-		config.setMaxIdle(max_idle);
-		config.setMaxTotal(max_active);
-		config.setMaxWaitMillis(max_wait);
+		config.setMaxIdle(pool.get("maxIdle"));
+		config.setMaxTotal(pool.get("maxActive"));
+		config.setMaxWaitMillis(pool.get("maxWait"));
 
 		try {
-			pool = new JedisPool(config,host.split(",")[0],port,timeout,password);
+			jedisPool = new JedisPool(config,host.split(",")[0],port,timeout,password);
 		} catch (Exception e1) {
 			logger.error("first create JedisPool error : " + e1);
 			try {
-				pool = new JedisPool(config,host.split(",")[1],port,timeout,password);
+				jedisPool = new JedisPool(config,host.split(",")[1],port,timeout,password);
 			} catch (Exception e2){
 				logger.error("second create JedisPool error : " + e2);
 				e2.printStackTrace();
 			}
 		}
-		return pool;
+		return jedisPool;
 	}
 
 	/**
 	 * 多线程环境同步初始化
 	 */
 	private  synchronized void poolInit() {
-		if (pool == null) {
+		if (jedisPool == null) {
 			initialPool();
 		}
 	}
 
 	public synchronized Jedis getJedis(){
-		if (pool == null) {
+		if (jedisPool == null) {
 			poolInit();
 		}
 		Jedis jedis = null;
 		try {
-			if (pool != null) {
-				jedis = pool.getResource();
+			if (jedisPool != null) {
+				jedis = jedisPool.getResource();
 			}
 		} catch (Exception e) {
 			logger.error("Get jedis error : "+e);
 			e.printStackTrace();
-		}finally{
-			returnResource(jedis);
 		}
 		return jedis;
 	}
 
 	@SuppressWarnings("deprecation")
 	public  void returnResource(final Jedis jedis) {
-		if (jedis != null && pool !=null) {
-			pool.returnResource(jedis);
+		if (jedis != null && jedisPool !=null) {
+			jedisPool.returnResource(jedis);
 		}
 	}
 
@@ -173,27 +169,11 @@ public class RedisConfig {
 		this.timeout = timeout;
 	}
 
-	public int getMax_active() {
-		return max_active;
+	public Map<String, Integer> getPool() {
+		return pool;
 	}
 
-	public void setMax_active(int max_active) {
-		this.max_active = max_active;
-	}
-
-	public int getMax_idle() {
-		return max_idle;
-	}
-
-	public void setMax_idle(int max_idle) {
-		this.max_idle = max_idle;
-	}
-
-	public int getMax_wait() {
-		return max_wait;
-	}
-
-	public void setMax_wait(int max_wait) {
-		this.max_wait = max_wait;
+	public void setPool(Map<String, Integer> pool) {
+		this.pool = pool;
 	}
 }
