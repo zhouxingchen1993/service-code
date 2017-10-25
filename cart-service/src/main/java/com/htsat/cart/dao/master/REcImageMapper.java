@@ -1,9 +1,10 @@
-package com.htsat.cart.dao;
+package com.htsat.cart.dao.master;
 
 import com.htsat.cart.model.REcImage;
 import com.htsat.cart.model.REcImageExample;
-import java.util.List;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 public interface REcImageMapper {
     int countByExample(REcImageExample example);

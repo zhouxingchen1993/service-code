@@ -1,9 +1,10 @@
-package com.htsat.cart.dao;
+package com.htsat.cart.dao.master;
 
 import com.htsat.cart.model.REcSku;
 import com.htsat.cart.model.REcSkuExample;
-import java.util.List;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 public interface REcSkuMapper {
     int countByExample(REcSkuExample example);

@@ -1,9 +1,10 @@
-package com.htsat.cart.dao;
+package com.htsat.cart.dao.master;
 
 import com.htsat.cart.model.REcUserbankinfo;
 import com.htsat.cart.model.REcUserbankinfoExample;
-import java.util.List;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 public interface REcUserbankinfoMapper {
     int countByExample(REcUserbankinfoExample example);

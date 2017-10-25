@@ -1,11 +1,12 @@
-package com.htsat.cart.dao;
+package com.htsat.cart.dao.slave;
 
 import com.htsat.cart.model.REcSpu;
 import com.htsat.cart.model.REcSpuExample;
-import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
-public interface REcSpuMapper {
+import java.util.List;
+
+public interface REcSpuReadMapper {
     int countByExample(REcSpuExample example);
 
     int deleteByExample(REcSpuExample example);

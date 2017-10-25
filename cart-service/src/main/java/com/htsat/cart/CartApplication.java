@@ -14,7 +14,7 @@ import org.springframework.web.client.RestTemplate;
 @EnableDiscoveryClient
 @EnableTransactionManagement
 @EnableFeignClients
-@MapperScan("com.htsat.cart.dao")
+//@MapperScan("com.htsat.cart.dao")
 public class CartApplication {
 
 	public static void main(String[] args) {

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.htsat.cart.dao.REcShoppingcartMapper" >
+<mapper namespace="com.htsat.cart.dao.master.REcShoppingcartMapper" >
   <resultMap id="BaseResultMap" type="com.htsat.cart.model.REcShoppingcart" >
     <id column="nShoppingCartID" property="nshoppingcartid" jdbcType="BIGINT" />
     <result column="nUserID" property="nuserid" jdbcType="BIGINT" />

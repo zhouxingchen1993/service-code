@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.htsat.cart.dao.REcImageMapper" >
+<mapper namespace="com.htsat.cart.dao.master.REcImageMapper" >
   <resultMap id="BaseResultMap" type="com.htsat.cart.model.REcImage" >
     <id column="nImageID" property="nimageid" jdbcType="BIGINT" />
     <result column="nImageType" property="nimagetype" jdbcType="VARCHAR" />

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.htsat.cart.dao.REcCategoryMapper" >
+<mapper namespace="com.htsat.cart.dao.master.REcCategoryMapper" >
   <resultMap id="BaseResultMap" type="com.htsat.cart.model.REcCategory" >
     <id column="nCategoryID" property="ncategoryid" jdbcType="INTEGER" />
     <result column="nLevel" property="nlevel" jdbcType="INTEGER" />

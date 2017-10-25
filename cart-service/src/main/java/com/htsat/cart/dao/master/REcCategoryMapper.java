@@ -1,9 +1,10 @@
-package com.htsat.cart.dao;
+package com.htsat.cart.dao.master;
 
 import com.htsat.cart.model.REcCategory;
 import com.htsat.cart.model.REcCategoryExample;
-import java.util.List;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 public interface REcCategoryMapper {
     int countByExample(REcCategoryExample example);

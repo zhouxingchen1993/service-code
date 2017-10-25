@@ -1,11 +1,12 @@
-package com.htsat.cart.dao;
+package com.htsat.cart.dao.slave;
 
 import com.htsat.cart.model.REcShoppingcart;
 import com.htsat.cart.model.REcShoppingcartExample;
-import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
-public interface REcShoppingcartMapper {
+import java.util.List;
+
+public interface REcShoppingcartReadMapper {
     int countByExample(REcShoppingcartExample example);
 
     int deleteByExample(REcShoppingcartExample example);

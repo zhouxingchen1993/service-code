@@ -1,13 +1,16 @@
 package com.htsat.cart.serviceimpl;
 
 import com.htsat.cart.config.RedisConfig;
+import com.htsat.cart.dao.master.REcCartskuMapper;
+import com.htsat.cart.dao.master.REcShoppingcartMapper;
+import com.htsat.cart.dao.master.REcSkuMapper;
+import com.htsat.cart.dao.slave.REcCartskuReadMapper;
+import com.htsat.cart.dao.slave.REcShoppingcartReadMapper;
+import com.htsat.cart.dao.slave.REcSkuReadMapper;
 import com.htsat.cart.exception.DeleteException;
 import com.htsat.cart.exception.InsertException;
 import com.htsat.cart.exception.SearchException;
 import com.htsat.cart.exception.UpdateException;
-import com.htsat.cart.dao.REcCartskuMapper;
-import com.htsat.cart.dao.REcShoppingcartMapper;
-import com.htsat.cart.dao.REcSkuMapper;
 import com.htsat.cart.dto.SKUDTO;
 import com.htsat.cart.dto.ShoppingCartDTO;
 import com.htsat.cart.model.REcCartsku;
@@ -43,20 +46,22 @@ public class ShoppingCartServiceImpl implements IShoppingCartService {
     private REcShoppingcartMapper shoppingcartMapper;
 
     @Autowired
+    private REcShoppingcartReadMapper shoppingcartReadMapper;
+
+    @Autowired
     private REcCartskuMapper cartskuMapper;
+
+    @Autowired
+    private REcCartskuReadMapper cartskuReadMapper;
 
     @Autowired
     private REcSkuMapper skuMapper;
 
     @Autowired
-    private RedisConfig redisConfig;
+    private REcSkuReadMapper skuReadMapper;
 
-//    @Autowired
-//    private IRedisService redisService;
-//
-//    private Jedis getJedis(){
-//        return redisService.getResource();
-//    }
+    @Autowired
+    private RedisConfig redisConfig;
 
     /******************************************create*********************************************/
 
@@ -155,7 +160,10 @@ public class ShoppingCartServiceImpl implements IShoppingCartService {
     }
 
     private REcShoppingcart getShoppingCartByMySQL(Long userId) throws SearchException{
-        List<REcShoppingcart> shoppingcartList = shoppingcartMapper.selectByUserId(userId);
+        /**
+         * shoppingcartMapper
+         */
+        List<REcShoppingcart> shoppingcartList = shoppingcartReadMapper.selectByUserId(userId);
         if (shoppingcartList == null || shoppingcartList.size() != 1) {
             throw new SearchException("mysql : search ShoppingCart failed");
         }
@@ -163,7 +171,10 @@ public class ShoppingCartServiceImpl implements IShoppingCartService {
     }
 
     private List<REcSku> getSKUListByMySQL(Long shoppingcartId) throws SearchException{
-        List<REcCartsku> cartskuList = cartskuMapper.selectByShoppingCartId(shoppingcartId);
+        /**
+         * cartskuMapper
+         */
+        List<REcCartsku> cartskuList = cartskuReadMapper.selectByShoppingCartId(shoppingcartId);
         List<REcSku> skuList = getSKUListBycarskuList(cartskuList);
         if (skuList == null) {
             throw new SearchException("mysql : search SKU failed");
@@ -209,7 +220,10 @@ public class ShoppingCartServiceImpl implements IShoppingCartService {
 
     @Transactional(propagation = Propagation.REQUIRED,isolation = Isolation.DEFAULT,timeout=3600,rollbackFor=Exception.class)
     public void deleteShoppingCartAndSKUByMySQL(Long shoppingcartId) throws DeleteException {
-        List<REcCartsku> cartskuList = cartskuMapper.selectByShoppingCartId(shoppingcartId);
+        /**
+         * cartskuMapper
+         */
+        List<REcCartsku> cartskuList = cartskuReadMapper.selectByShoppingCartId(shoppingcartId);
         List<Long> skuIdList = new ArrayList<>();
         cartskuList.forEach(n -> skuIdList.add(n.getNskuid()));
         for (Long skuId : skuIdList) {
@@ -324,7 +338,10 @@ public class ShoppingCartServiceImpl implements IShoppingCartService {
         if (updateResult != 1) {
             throw new UpdateException("mysql : update ShoppingCart failed");
         }
-        REcShoppingcart shoppingcartResult = shoppingcartMapper.selectByPrimaryKey(shoppingcart.getNshoppingcartid());
+        /**
+         * shoppingcartMapper
+         */
+        REcShoppingcart shoppingcartResult = shoppingcartReadMapper.selectByPrimaryKey(shoppingcart.getNshoppingcartid());
         if (shoppingcartResult == null) {
             throw new UpdateException("mysql : update search ShoppingCart failed");
         }
@@ -344,7 +361,10 @@ public class ShoppingCartServiceImpl implements IShoppingCartService {
                 throw new UpdateException("mysql : update add CartSKU failed");
             }
         }
-        List<REcCartsku> cartskuList = cartskuMapper.selectByShoppingCartId(shoppingcartResult.getNshoppingcartid());
+        /**
+         * cartskuMapper
+         */
+        List<REcCartsku> cartskuList = cartskuReadMapper.selectByShoppingCartId(shoppingcartResult.getNshoppingcartid());
         List<REcSku> skuList = getSKUListBycarskuList(cartskuList);
         return skuList;
     }
@@ -355,14 +375,20 @@ public class ShoppingCartServiceImpl implements IShoppingCartService {
             REcCartskuKey key = new REcCartskuKey();
             key.setNshoppingcartid(shoppingcart.getNshoppingcartid());
             key.setNskuid(skuDTO.getSkuId());
-            REcCartsku cartsku = cartskuMapper.selectByREcCartskuKey(key);
+            /**
+             * cartskuMapper
+             */
+            REcCartsku cartsku = cartskuReadMapper.selectByREcCartskuKey(key);
             cartsku.setNquantity(skuDTO.getQuantity());//update quantity
             int result = cartskuMapper.updateByPrimaryKey(cartsku);
             if (result != 1) {
                 throw new UpdateException("mysql : update refresh CartSKU failed");
             }
         }
-        List<REcCartsku> cartskuList = cartskuMapper.selectByShoppingCartId(shoppingcart.getNshoppingcartid());
+        /**
+         * cartskuMapper
+         */
+        List<REcCartsku> cartskuList = cartskuReadMapper.selectByShoppingCartId(shoppingcart.getNshoppingcartid());
         List<REcSku> skuList = getSKUListBycarskuList(cartskuList);
         return skuList;
     }
@@ -373,14 +399,20 @@ public class ShoppingCartServiceImpl implements IShoppingCartService {
             REcCartskuKey key = new REcCartskuKey();
             key.setNshoppingcartid(shoppingcart.getNshoppingcartid());
             key.setNskuid(skuDTO.getSkuId());
-            REcCartsku cartsku = cartskuMapper.selectByREcCartskuKey(key);
+            /**
+             * cartskuMapper
+             */
+            REcCartsku cartsku = cartskuReadMapper.selectByREcCartskuKey(key);
             cartsku.setNquantity(skuDTO.getQuantity());//delete quantity
             int result = cartskuMapper.deleteByPrimaryKey(cartsku.getNcartskuid());
             if (result != 1) {
                 throw new UpdateException("mysql : update delete CartSKU failed");
             }
         }
-        List<REcCartsku> cartskuList = cartskuMapper.selectByShoppingCartId(shoppingcart.getNshoppingcartid());
+        /**
+         * cartskuMapper
+         */
+        List<REcCartsku> cartskuList = cartskuReadMapper.selectByShoppingCartId(shoppingcart.getNshoppingcartid());
         List<REcSku> skuList = getSKUListBycarskuList(cartskuList);
         return skuList;
     }
@@ -432,7 +464,10 @@ public class ShoppingCartServiceImpl implements IShoppingCartService {
     public List<REcSku> getSKUListByDTOList(List<SKUDTO> skudtoList) {
         List<Long> skuIdList = new ArrayList<>();
         skudtoList.forEach(n -> skuIdList.add(n.getSkuId()));
-        List<REcSku> skuList = skuMapper.getSKUList(skuIdList);
+        /**
+         * skuMapper
+         */
+        List<REcSku> skuList = skuReadMapper.getSKUList(skuIdList);
         return skuList;
     }
 
@@ -447,7 +482,10 @@ public class ShoppingCartServiceImpl implements IShoppingCartService {
         List<Integer> quantityList = new ArrayList<>();
         cartskuList.forEach(n -> skuIdList.add(n.getNskuid()));
         cartskuList.forEach(n -> quantityList.add(n.getNquantity()));
-        List<REcSku> skuList = skuMapper.getSKUList(skuIdList);
+        /**
+         * skuMapper
+         */
+        List<REcSku> skuList = skuReadMapper.getSKUList(skuIdList);
         //inventory is sku's quantity to give dto to show
         for (int i = 0; i < skuList.size(); i++) {
             skuList.get(i).setNinventory(quantityList.get(i));
@@ -467,10 +505,16 @@ public class ShoppingCartServiceImpl implements IShoppingCartService {
             REcCartskuKey key = new REcCartskuKey();
             key.setNshoppingcartid(shoppingcart.getNshoppingcartid());
             key.setNskuid(skudto.getSkuId());
-            REcCartsku cartsku = cartskuMapper.selectByREcCartskuKey(key);
+            /**
+             * cartskuMapper
+             */
+            REcCartsku cartsku = cartskuReadMapper.selectByREcCartskuKey(key);
             if (cartsku == null)
                 return null;
-            REcSku sku = skuMapper.selectByPrimaryKey(skudto.getSkuId());
+            /**
+             * skuMapper
+             */
+            REcSku sku = skuReadMapper.selectByPrimaryKey(skudto.getSkuId());
             if (sku == null)
                 return null;
             quantityOriginSKU += cartsku.getNquantity();
@@ -494,7 +538,10 @@ public class ShoppingCartServiceImpl implements IShoppingCartService {
     }
 
     private REcShoppingcart getShoppingCartByUserId(Long userId) {
-        List<REcShoppingcart> shoppingcartList = shoppingcartMapper.selectByUserId(userId);
+        /**
+         * shoppingcartMapper
+         */
+        List<REcShoppingcart> shoppingcartList = shoppingcartReadMapper.selectByUserId(userId);
         if (shoppingcartList == null || shoppingcartList.size() != 1) {
             return null;
         }

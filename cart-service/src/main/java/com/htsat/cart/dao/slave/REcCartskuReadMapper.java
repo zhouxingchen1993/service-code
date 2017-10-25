@@ -1,13 +1,13 @@
-package com.htsat.cart.dao;
+package com.htsat.cart.dao.slave;
 
 import com.htsat.cart.model.REcCartsku;
 import com.htsat.cart.model.REcCartskuExample;
-import java.util.List;
-
 import com.htsat.cart.model.REcCartskuKey;
 import org.apache.ibatis.annotations.Param;
 
-public interface REcCartskuMapper {
+import java.util.List;
+
+public interface REcCartskuReadMapper {
     int countByExample(REcCartskuExample example);
 
     int deleteByExample(REcCartskuExample example);

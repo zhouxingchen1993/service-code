@@ -1,9 +1,10 @@
-package com.htsat.cart.dao;
+package com.htsat.cart.dao.master;
 
 import com.htsat.cart.model.REcBrand;
 import com.htsat.cart.model.REcBrandExample;
-import java.util.List;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 public interface REcBrandMapper {
     int countByExample(REcBrandExample example);
